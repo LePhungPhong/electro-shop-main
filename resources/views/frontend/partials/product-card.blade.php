@@ -1,117 +1,129 @@
 {{-- resources/views/frontend/partials/product-card.blade.php --}}
-<div class="group relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+<div class="group relative rounded-xl overflow-hidden border bg-neutral-900 border-neutral-800 shadow-sm hover:shadow-lg hover:border-indigo-600 transition">
     {{-- Link tới trang chi tiết sản phẩm --}}
-    <a href="{{ route('products.show', $product->slug) }}">
+    <a href="{{ route('products.show', $product->slug) }}" class="block">
         {{-- Ảnh thumbnail --}}
-        <div class="w-full h-56 bg-gray-100 flex items-center justify-center">
+        <div class="w-full h-56 bg-neutral-800 flex items-center justify-center">
             @php
-                // Lấy ảnh thumbnail (quan hệ thumbnail()), fallback ảnh đầu tiên nếu không có
-                $thumb   = $product->thumbnail;
-                $imgPath = $thumb ? $thumb->image_path : ($product->images->first()?->image_path);
+            $thumb = $product->thumbnail;
+            $imgPath = $thumb ? $thumb->image_path : ($product->images->first()?->image_path);
             @endphp
 
             @if($imgPath)
-                <img
-                    src="{{ cloudinary_url($imgPath) }}"
-                    alt="{{ $product->name }}"
-                    class="w-full h-full object-cover"
-                >
+            <img
+                src="{{ cloudinary_url($imgPath) }}"
+                alt="{{ $product->name }}"
+                class="w-full h-full object-cover">
             @else
-                <span class="text-gray-400">Chưa có ảnh</span>
+            <span class="text-neutral-400">Chưa có ảnh</span>
             @endif
 
-            {{-- Hiển thị badge giảm giá nếu có sale --}}
+            {{-- Badge giảm giá (nếu có) --}}
             @if($product->sale_price && $product->sale_price < $product->regular_price)
                 @php
-                    $discountPercentage = round((($product->regular_price - $product->sale_price) / $product->regular_price) * 100);
+                $discountPercentage = round((($product->regular_price - $product->sale_price) / $product->regular_price) * 100);
                 @endphp
-                <span
-                    class="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded"
-                >
+                <span class="absolute top-2 right-2 rounded-md bg-red-600 text-white text-xs font-semibold px-2 py-1">
                     -{{ $discountPercentage }}%
                 </span>
-            @endif
+                @endif
         </div>
     </a>
 
-    {{-- Phần thông tin & nút --}}
+    {{-- Nội dung --}}
     <div class="p-4">
-        {{-- Tên category --}}
+        {{-- Category --}}
         @if($product->category)
-            <p class="text-xs text-gray-500 mb-1">{{ $product->category->name }}</p>
+        <p class="text-[12px] uppercase tracking-wide text-neutral-400 mb-1">
+            {{ $product->category->name }}
+        </p>
         @endif
 
         {{-- Tên sản phẩm --}}
         <a href="{{ route('products.show', $product->slug) }}">
-            <h3 class="text-md font-semibold text-gray-800 mb-2 truncate group-hover:text-indigo-600 transition-colors">
+            <h3 class="text-sm sm:text-base font-semibold text-neutral-100 mb-2 line-clamp-2 group-hover:text-indigo-400 transition-colors">
                 {{ $product->name }}
             </h3>
         </a>
 
-        {{-- Giá --}}
-        <div class="flex items-center justify-between mb-1">
+        {{-- Giá + Wishlist --}}
+        <div class="flex items-center justify-between mb-2">
             @if($product->sale_price && $product->sale_price < $product->regular_price)
-                <div>
-                    <span class="text-lg font-bold text-red-600">
-                        {{ number_format($product->sale_price, 0, ',', '.') }} VNĐ
+                <div class="flex flex-col">
+                    <span class="text-lg font-bold text-red-500">
+                        {{ number_format($product->sale_price, 0, ',', '.') }}₫
                     </span>
-                    <span class="text-sm text-gray-400 line-through ml-1">
-                        {{ number_format($product->regular_price, 0, ',', '.') }} VNĐ
+                    <span class="text-xs text-neutral-400 line-through">
+                        {{ number_format($product->regular_price, 0, ',', '.') }}₫
                     </span>
                 </div>
-            @else
-                <span class="text-lg font-bold text-indigo-600">
-                    {{ number_format($product->regular_price, 0, ',', '.') }} VNĐ
+                @else
+                <span class="text-lg font-bold text-indigo-400">
+                    {{ number_format($product->regular_price, 0, ',', '.') }}₫
                 </span>
-            @endif
+                @endif
 
-            {{-- Nút Wishlist (Livewire) --}}
-            @livewire(
-                'frontend.wishlist-button',
-                ['productId' => $product->id],
-                key('card-wishlist-'.$product->id)
-            )
+                {{-- Wishlist (Livewire) --}}
+                <div class="shrink-0">
+                    @livewire(
+                    'frontend.wishlist-button',
+                    ['productId' => $product->id],
+                    key('card-wishlist-'.$product->id)
+                    )
+                </div>
         </div>
 
-        {{-- Thông tin tồn kho --}}
+        {{-- Tồn kho --}}
         @if($product->stock_quantity > 0)
-            <p class="text-sm text-green-600 mb-2">Còn {{ $product->stock_quantity }} sản phẩm</p>
+        <p class="text-sm text-emerald-400 mb-3">Còn {{ $product->stock_quantity }} sản phẩm</p>
         @else
-            <p class="text-sm text-red-600 mb-2">Hết hàng</p>
+        <p class="text-sm text-red-500 mb-3">Hết hàng</p>
         @endif
 
-        {{-- Nút Add to Cart (Livewire) --}}
-        <div class="pt-2">
+        {{-- Add to Cart --}}
+        <div class="pt-1">
             @if($product->variants->isNotEmpty())
-                {{-- Nếu có variant, hiển thị nút riêng cho từng variant --}}
+            {{-- Có variant: hiển thị gọn từng lựa chọn --}}
+            <div class="space-y-2">
                 @foreach($product->variants as $variant)
-                    <div class="mb-2 flex justify-between items-center p-2 border rounded">
-                        <div class="text-sm">
-                            @foreach($variant->options as $opt)
-                                {{ $opt->attribute->name }}: {{ $opt->value }}
-                                @if(!$loop->last), @endif
-                            @endforeach
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm font-medium text-indigo-600">
-                                {{ number_format($variant->specific_price, 0, ',', '.') }}₫
-                            </span>
-                            @livewire(
-                                'frontend.product.add-to-cart-button',
-                                ['product' => $product, 'variant' => $variant],
-                                key('variant-card-cart-'.$variant->id)
-                            )
-                        </div>
+                <div class="flex justify-between items-center px-3 py-2 rounded-lg border border-neutral-700 bg-neutral-800">
+                    <div class="text-xs sm:text-sm text-neutral-200">
+                        @foreach($variant->options as $opt)
+                        <span class="text-neutral-300">{{ $opt->attribute->name }}:</span> {{ $opt->value }}@if(!$loop->last), @endif
+                        @endforeach
                     </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-indigo-400">
+                            {{ number_format($variant->specific_price, 0, ',', '.') }}₫
+                        </span>
+                        @livewire(
+                        'frontend.product.add-to-cart-button',
+                        ['product' => $product, 'variant' => $variant],
+                        key('variant-card-cart-'.$variant->id)
+                        )
+                    </div>
+                </div>
                 @endforeach
+            </div>
             @else
-                {{-- Không có variant --}}
-                @livewire(
-                    'frontend.product.add-to-cart-button',
-                    ['product' => $product],
-                    key('card-cart-'.$product->id)
-                )
+            {{-- Không có variant --}}
+            @livewire(
+            'frontend.product.add-to-cart-button',
+            ['product' => $product],
+            key('card-cart-'.$product->id)
+            )
             @endif
+        </div>
+    </div>
+
+    {{-- Quick action bar (ẩn/hiện khi hover, nền đen đặc) --}}
+    <div class="pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="absolute inset-x-0 top-0 p-3">
+            <div class="rounded-lg bg-neutral-900 border border-neutral-800 shadow-lg">
+                <div class="px-3 py-2 text-[12px] text-neutral-300">
+                    Nhấn để xem chi tiết • Thêm vào giỏ • Yêu thích
+                </div>
+            </div>
         </div>
     </div>
 </div>

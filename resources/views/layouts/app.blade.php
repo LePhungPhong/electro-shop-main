@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,14 +16,15 @@
     @livewireStyles
     @stack('styles')
 </head>
-<body class="font-sans antialiased bg-gray-100 text-gray-900">
+
+<body class="font-sans antialiased bg-black">
     <div class="min-h-screen flex flex-col">
         @include('frontend.partials.header')
 
         <main class="flex-grow">
             @yield('content')
             @isset($slot)
-                {{ $slot }}
+            {{ $slot }}
             @endisset
         </main>
 
@@ -41,12 +43,13 @@
     <!-- <x-chat-widget /> -->
     @auth
     @php
-        // Lấy thông tin cuộc hội thoại của user đang đăng nhập ngay tại đây
-        $conversation = \App\Models\Conversation::firstOrCreate(['user_id' => auth()->id()]);
+    // Lấy thông tin cuộc hội thoại của user đang đăng nhập ngay tại đây
+    $conversation = \App\Models\Conversation::firstOrCreate(['user_id' => auth()->id()]);
     @endphp
 
     {{-- Truyền thẳng đối tượng conversation vào component --}}
     <x-chat-widget :conversation="$conversation" />
-@endauth
+    @endauth
 </body>
+
 </html>

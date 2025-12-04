@@ -29,3 +29,7 @@ npm install
 # Chạy frontend dev (Tailwind/Vite)
 
 npm run dev
+
+php artisan migrate:fresh
+php artisan db:seed
+php artisan storage:link

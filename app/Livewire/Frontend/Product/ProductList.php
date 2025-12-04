@@ -43,8 +43,8 @@ class ProductList extends Component
 
         // Khởi tạo priceRange với min/max thực từ CSDL
         $priceAgg = Product::where('is_active', true)
-                            ->selectRaw('MIN(regular_price) as min_price, MAX(regular_price) as max_price')
-                            ->first();
+            ->selectRaw('MIN(regular_price) as min_price, MAX(regular_price) as max_price')
+            ->first();
 
         $this->priceRange['min'] = $priceAgg->min_price;
         $this->priceRange['max'] = $priceAgg->max_price;
@@ -82,6 +82,30 @@ class ProductList extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        // Đặt về giá trị mặc định mà bạn mong muốn
+        $this->reset([
+            'brandSlugs',
+            'searchQuery',
+            'priceRange',
+            'selectedAttributes',
+            'categoryIds',
+            'sortBy',
+        ]);
+
+        // Nếu muốn set lại cụ thể:
+        $this->brandSlugs = [];
+        $this->searchQuery = null;
+        $this->priceRange = ['min' => null, 'max' => null];
+        $this->selectedAttributes = [];
+        $this->categoryIds = [];
+        $this->sortBy = 'created_at';
+
+        // Reset trang phân trang nếu có
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = Product::where('is_active', true);
@@ -104,9 +128,9 @@ class ProductList extends Component
         // 3. Filter search
         if ($this->searchQuery) {
             $query->where(function ($q) {
-                $q->where('name', 'like', '%'.$this->searchQuery.'%')
-                  ->orWhere('sku', 'like', '%'.$this->searchQuery.'%')
-                  ->orWhere('short_description', 'like', '%'.$this->searchQuery.'%');
+                $q->where('name', 'like', '%' . $this->searchQuery . '%')
+                    ->orWhere('sku', 'like', '%' . $this->searchQuery . '%')
+                    ->orWhere('short_description', 'like', '%' . $this->searchQuery . '%');
             });
         }
 
@@ -152,15 +176,15 @@ class ProductList extends Component
 
         // Dữ liệu cho sidebar
         $categories = Category::where('is_active', true)
-                              ->whereNull('parent_id')
-                              ->with('children')
-                              ->get();
+            ->whereNull('parent_id')
+            ->with('children')
+            ->get();
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
         $attributes = Attribute::with('values')->get();
 
         $priceAgg = Product::where('is_active', true)
-                           ->selectRaw('MIN(regular_price) as min_price, MAX(regular_price) as max_price')
-                           ->first();
+            ->selectRaw('MIN(regular_price) as min_price, MAX(regular_price) as max_price')
+            ->first();
         $priceRangeAll = [
             'min' => $priceAgg->min_price ?? 0,
             'max' => $priceAgg->max_price ?? 0,
